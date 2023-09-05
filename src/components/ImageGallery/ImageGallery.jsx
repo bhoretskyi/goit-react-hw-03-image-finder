@@ -5,8 +5,9 @@ export const ImageGallery = ({ data, openModal }) => {
       {data.map(image => (
         <ImageGalleryItem
           key={image.id}
-          src={image.previewURL}
+          src={image.webformatURL}
           alt={image.tags}
+          largeImg={image.largeImageURL}
           openModal={openModal}
         />
       ))}

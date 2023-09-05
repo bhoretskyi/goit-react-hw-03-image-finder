@@ -1,6 +1,6 @@
-export const ImageGalleryItem = ({ src, alt, openModal }) => {
+export const ImageGalleryItem = ({ src, alt, openModal,largeImg }) => {
   const handleImageClick = () => {
-    openModal(src);
+    openModal(largeImg);
   };
 
   return (
