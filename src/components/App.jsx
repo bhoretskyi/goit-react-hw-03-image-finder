@@ -1,10 +1,10 @@
 import { Component } from 'react';
-import axios from 'axios';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
+import { getImages } from './GetImages';
 
 export class App extends Component {
   state = {
@@ -14,72 +14,52 @@ export class App extends Component {
     isModalOpen: false,
     selectedImageUrl: '',
     isLoading: false,
-    hasMoreImages: true,
+    hasMoreImages: false,
   };
 
-  async componentDidMount() {
+  async componentDidUpdate(prevProps, PrevState) {
     document.addEventListener('keydown', this.handleEscKeyPress);
-    this.setState({ isLoading: true });
-    try {
-      const response = await axios.get(
-        'https://pixabay.com/api/?key=38354710-a3d6b3af700cce2a78ac34292&q=yellow+flowers&image_type=photo&pretty=true&per_page=12'
-      );
-      this.setState({ images: response.data.hits });
-    } catch (error) {
-      console.error('Something wrong. Please reload page.', error);
-    } finally {
-      this.setState({ isLoading: false });
+
+    if (
+      PrevState.queryState !== this.state.queryState ||
+      PrevState.page !== this.state.page
+    ) {
+      this.setState({ isLoading: true });
+      try {
+        const images = await getImages(this.state.queryState, this.state.page);
+        if (images.length > 0) {
+          this.setState({ hasMoreImages: true });
+        }
+        if (images.length < 12) {
+          this.setState({ hasMoreImages: false });
+        }
+        const processedImages = images.map(image => ({
+          id: image.id,
+          webformatURL: image.webformatURL,
+          largeImageURL: image.largeImageURL,
+        }));
+        // this.setState({ images: processedImages });
+        this.setState(prevState => ({
+          images: [...prevState.images, ...processedImages],
+        }));
+      } catch (error) {
+        console.log(error);
+      } finally {
+        this.setState({ isLoading: false });
+      }
     }
-  }
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleEscKeyPress);
   }
 
-  handleSearch = async query => {
-    this.setState({ isLoading: true });
-    try {
-      const response = await axios.get(
-        `https://pixabay.com/api/?key=38354710-a3d6b3af700cce2a78ac34292&q=${query}&image_type=photo&pretty=true&per_page=12`
-      );
-      this.setState({
-        images: response.data.hits,
-        queryState: query,
-        hasMoreImages: true,
-      });
-    } catch (error) {
-      console.error('Something wrong. Please reload page.', error);
-    } finally {
-      this.setState({ isLoading: false });
-    }
+  handleSearch = query => {
+    this.setState({ page: 1, images: [], queryState: query });
   };
-  loadMoreImages = async event => {
-    console.log(event)
 
-    event.preventDefault()
-    this.setState({ isLoading: true });
+  loadMoreImages = async () => {
     const { page } = this.state;
     const nextPage = page + 1;
-
-    try {
-      const response = await axios.get(
-        `https://pixabay.com/api/?key=38354710-a3d6b3af700cce2a78ac34292&page=${nextPage}&q=${this.state.queryState}&image_type=photo&pretty=true&per_page=12`
-      );
-
-      if (response.data.hits.length > 0) {
-        this.setState(prevState => ({
-          images: [...prevState.images, ...response.data.hits],
-          page: nextPage,
-          hasMoreImages: true,
-        }));
-      } else {
-        this.setState({ hasMoreImages: false });
-      }
-    } catch (error) {
-      console.error('Something wrong. Please reload page.', error);
-    } finally {
-      this.setState({ isLoading: false });
-    }
+    this.setState({ page: nextPage });
   };
+
   openModal = imageUrl => {
     this.setState({
       isModalOpen: true,
