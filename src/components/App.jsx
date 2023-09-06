@@ -43,7 +43,7 @@ export class App extends Component {
           images: [...prevState.images, ...processedImages],
         }));
       } catch (error) {
-        console.log(error);
+        console.log('Error.Please reload page');
       } finally {
         this.setState({ isLoading: false });
       }
