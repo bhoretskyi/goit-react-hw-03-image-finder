@@ -8,7 +8,7 @@ import { Modal } from './Modal/Modal';
 
 export class App extends Component {
   state = {
-    articles: [],
+    images: [],
     page: 1,
     queryState: '',
     isModalOpen: false,
@@ -24,7 +24,7 @@ export class App extends Component {
       const response = await axios.get(
         'https://pixabay.com/api/?key=38354710-a3d6b3af700cce2a78ac34292&q=yellow+flowers&image_type=photo&pretty=true&per_page=12'
       );
-      this.setState({ articles: response.data.hits });
+      this.setState({ images: response.data.hits });
     } catch (error) {
       console.error('Something wrong. Please reload page.', error);
     } finally {
@@ -42,7 +42,7 @@ export class App extends Component {
         `https://pixabay.com/api/?key=38354710-a3d6b3af700cce2a78ac34292&q=${query}&image_type=photo&pretty=true&per_page=12`
       );
       this.setState({
-        articles: response.data.hits,
+        images: response.data.hits,
         queryState: query,
         hasMoreImages: true,
       });
@@ -52,7 +52,10 @@ export class App extends Component {
       this.setState({ isLoading: false });
     }
   };
-  loadMoreImages = async () => {
+  loadMoreImages = async event => {
+    console.log(event)
+
+    event.preventDefault()
     this.setState({ isLoading: true });
     const { page } = this.state;
     const nextPage = page + 1;
@@ -64,7 +67,7 @@ export class App extends Component {
 
       if (response.data.hits.length > 0) {
         this.setState(prevState => ({
-          articles: [...prevState.articles, ...response.data.hits],
+          images: [...prevState.images, ...response.data.hits],
           page: nextPage,
           hasMoreImages: true,
         }));
@@ -104,7 +107,7 @@ export class App extends Component {
         {this.state.isLoading ? (
           <Loader />
         ) : (
-          <ImageGallery data={this.state.articles} openModal={this.openModal} />
+          <ImageGallery data={this.state.images} openModal={this.openModal} />
         )}
         {this.state.hasMoreImages ? (
           <Button onClick={this.loadMoreImages} />
