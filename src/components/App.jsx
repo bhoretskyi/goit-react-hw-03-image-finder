@@ -18,7 +18,6 @@ export class App extends Component {
   };
 
   async componentDidUpdate(prevProps, PrevState) {
-    document.addEventListener('keydown', this.handleEscKeyPress);
 
     if (
       PrevState.queryState !== this.state.queryState ||
@@ -61,6 +60,8 @@ export class App extends Component {
   };
 
   openModal = imageUrl => {
+    document.addEventListener('keydown', this.handleEscKeyPress);
+
     this.setState({
       isModalOpen: true,
       selectedImageUrl: imageUrl,
@@ -68,6 +69,8 @@ export class App extends Component {
   };
 
   closeModal = () => {
+    document.removeEventListener('keydown', this.handleEscKeyPress);
+
     this.setState({
       isModalOpen: false,
       selectedImageUrl: '',
